@@ -1,0 +1,7 @@
+from .NeuralNetwork import GD = {			'nEpoch':100,
+,Nesterov = {	'nEpoch':100,
+,RProp = {		'nEpoch':100,
+,RMSProp = {		'nEpoch':100,
+,NeuralNetwork ,NeuralNetworkArray 
+from .AnimateNeuralNetwork import _GetFrameRenderer,_PlotTruthTable,AnimateNeuralNetwork,AnimateANDGate,AnimateNANDGate,AnimateORGate,AnimateXORGate
+from .PlotNetwork import PlotNetwork
