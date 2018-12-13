@@ -3,34 +3,34 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <omp.h>
+
 using namespace std;
 
 class Matrix {
 	public:
 		int shape[2];
-		int len;
+		int size;
 		Matrix(int*);
 		Matrix(int,int);
+		Matrix(int*,double**);
+		Matrix(int,int,double**);
 		Matrix(const Matrix &obj);
 		~Matrix();
 		void FillZeros();
-		float Get(int,int);
-		float GetT(int,int);
-		void Set(int,float);
-		void Set(int,int,float);
-		void TimesScalar(float);
-		void DivideScalar(float);
-		void AddScalar(float);
-		void SubtractScalar(float);
-		void SubtractFromScalar(float);
+		void TimesScalar(double);
+		void DivideScalar(double);
+		void AddScalar(double);
+		void SubtractScalar(double);
+		void SubtractFromScalar(double);
 		void PrintMatrix();
 		void PrintMatrix(const char *);
 		void CopyMatrix(Matrix&);
-		void FillMatrix(float*);
-		void FillWithBias(float*);
-		void ReturnMatrix(float*);
-		float *data = NULL;
+		void FillMatrix(double**);
+		void ReturnMatrix(double**);
+		double **data = NULL;
 	private:
+		bool DeleteData;
 		
 };
 

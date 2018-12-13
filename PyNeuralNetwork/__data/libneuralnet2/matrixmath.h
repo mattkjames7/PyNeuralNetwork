@@ -7,8 +7,8 @@
 #include <omp.h>
 using namespace std;
 
-Matrix * MatrixMultiply(Matrix &a, Matrix &b, bool aT, bool bT);
-void MatrixMultiply2(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out);
-Matrix * MatrixDot(Matrix &a, Matrix &b, bool aT, bool bT);
-void MatrixDot2(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out);
+void MatrixMultiply(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out);
+void MatrixDot(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out);
+void MatrixAdd(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out);
+void MatrixSubtract(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out);
 #endif

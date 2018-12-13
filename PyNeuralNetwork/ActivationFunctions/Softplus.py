@@ -38,7 +38,7 @@ def SoftplusGradient(z):
 
 def InverseSoftplus(a):
 	
-	z = np.log10(np.exp(a) - 1.0)
+	z = np.log(np.exp(a) - 1.0)
 	return z
 	
 

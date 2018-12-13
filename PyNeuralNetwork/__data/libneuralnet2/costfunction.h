@@ -5,6 +5,7 @@
 #include "matrixarray.h"
 #include "cliplog.h"
 #include "propagate.h"
+#include "regularization.h"
 using namespace std;
 float CostFunction(MatrixArray &Theta, MatrixArray &a, MatrixArray &z, int *y, int L, int *s, float Lambda);
 #endif
