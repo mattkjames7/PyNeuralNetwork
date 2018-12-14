@@ -9,6 +9,6 @@
 #include "sigmoid.h"
 using namespace std;
 
-void Propagate(MatrixArray &a, MatrixArray &z, MatrixArray &Theta, int L);
+void Propagate(MatrixArray &a, MatrixArray &z, MatrixArray &ThetaW, MatrixArray &ThetaB, ActFunc *AF);
 #endif
 

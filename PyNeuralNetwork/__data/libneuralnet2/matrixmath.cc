@@ -240,14 +240,14 @@ void MatrixDot(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out) {
 void _Subab(Matrix &a, Matrix &b, Matrix &out) {
     omp_set_num_threads(8);
 	int maxthreads = omp_get_max_threads();
-	int chunk = ceil(((double) o.shape[0])/(maxthreads*10));
+	int chunk = ceil(((double) out.shape[0])/(maxthreads*10));
 	#pragma omp parallel 
 	{
 		int i,j;
 		double tmp;
 		#pragma omp for schedule(static,chunk) 
-		for (i=0;i<o.shape[0];i++) {
-			for (j=0;j<o.shape[1];j++) {
+		for (i=0;i<out.shape[0];i++) {
+			for (j=0;j<out.shape[1];j++) {
 				out.data[i][j] = a.data[i][j] - b.data[i][j];
 			}
 		}
@@ -257,14 +257,14 @@ void _Subab(Matrix &a, Matrix &b, Matrix &out) {
 void _SubaTb(Matrix &a, Matrix &b, Matrix &out) {
     omp_set_num_threads(8);
 	int maxthreads = omp_get_max_threads();
-	int chunk = ceil(((double) o.shape[1])/(maxthreads*10));
+	int chunk = ceil(((double) out.shape[1])/(maxthreads*10));
 	#pragma omp parallel 
 	{
 		int i,j;
 		double tmp;
 		#pragma omp for schedule(static,chunk) 
-		for (i=0;i<o.shape[0];i++) {
-			for (j=0;j<o.shape[1];j++) {
+		for (i=0;i<out.shape[0];i++) {
+			for (j=0;j<out.shape[1];j++) {
 				out.data[i][j] = a.data[j][i] - b.data[i][j];
 			}
 		}
@@ -274,14 +274,14 @@ void _SubaTb(Matrix &a, Matrix &b, Matrix &out) {
 void _SubabT(Matrix &a, Matrix &b, Matrix &out) {
     omp_set_num_threads(8);
 	int maxthreads = omp_get_max_threads();
-	int chunk = ceil(((double) o.shape[0])/(maxthreads*10));
+	int chunk = ceil(((double) out.shape[0])/(maxthreads*10));
 	#pragma omp parallel 
 	{
 		int i,j;
 		double tmp;
 		#pragma omp for schedule(static,chunk) 
-		for (i=0;i<o.shape[0];i++) {
-			for (j=0;j<o.shape[1];j++) {
+		for (i=0;i<out.shape[0];i++) {
+			for (j=0;j<out.shape[1];j++) {
 				out.data[i][j] = a.data[i][j] - b.data[j][i];
 			}
 		}
@@ -291,14 +291,14 @@ void _SubabT(Matrix &a, Matrix &b, Matrix &out) {
 void _SubaTbT(Matrix &a, Matrix &b, Matrix &out) {
     omp_set_num_threads(8);
 	int maxthreads = omp_get_max_threads();
-	int chunk = ceil(((double) o.shape[0])/(maxthreads*10));
+	int chunk = ceil(((double) out.shape[0])/(maxthreads*10));
 	#pragma omp parallel 
 	{
 		int i,j;
 		double tmp;
 		#pragma omp for schedule(static,chunk) 
-		for (i=0;i<o.shape[0];i++) {
-			for (j=0;j<o.shape[1];j++) {
+		for (i=0;i<out.shape[0];i++) {
+			for (j=0;j<out.shape[1];j++) {
 				out.data[i][j] = a.data[j][i] - b.data[j][i];
 			}
 		}
@@ -324,14 +324,14 @@ void MatrixSubtract(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out) {
 void _Addab(Matrix &a, Matrix &b, Matrix &out) {
     omp_set_num_threads(8);
 	int maxthreads = omp_get_max_threads();
-	int chunk = ceil(((double) o.shape[0])/(maxthreads*10));
+	int chunk = ceil(((double) out.shape[0])/(maxthreads*10));
 	#pragma omp parallel 
 	{
 		int i,j;
 		double tmp;
 		#pragma omp for schedule(static,chunk) 
-		for (i=0;i<o.shape[0];i++) {
-			for (j=0;j<o.shape[1];j++) {
+		for (i=0;i<out.shape[0];i++) {
+			for (j=0;j<out.shape[1];j++) {
 				out.data[i][j] = a.data[i][j] + b.data[i][j];
 			}
 		}
@@ -341,14 +341,14 @@ void _Addab(Matrix &a, Matrix &b, Matrix &out) {
 void _AddaTb(Matrix &a, Matrix &b, Matrix &out) {
     omp_set_num_threads(8);
 	int maxthreads = omp_get_max_threads();
-	int chunk = ceil(((double) o.shape[1])/(maxthreads*10));
+	int chunk = ceil(((double) out.shape[1])/(maxthreads*10));
 	#pragma omp parallel 
 	{
 		int i,j;
 		double tmp;
 		#pragma omp for schedule(static,chunk) 
-		for (i=0;i<o.shape[0];i++) {
-			for (j=0;j<o.shape[1];j++) {
+		for (i=0;i<out.shape[0];i++) {
+			for (j=0;j<out.shape[1];j++) {
 				out.data[i][j] = a.data[j][i] + b.data[i][j];
 			}
 		}
@@ -358,14 +358,14 @@ void _AddaTb(Matrix &a, Matrix &b, Matrix &out) {
 void _AddabT(Matrix &a, Matrix &b, Matrix &out) {
     omp_set_num_threads(8);
 	int maxthreads = omp_get_max_threads();
-	int chunk = ceil(((double) o.shape[0])/(maxthreads*10));
+	int chunk = ceil(((double) out.shape[0])/(maxthreads*10));
 	#pragma omp parallel 
 	{
 		int i,j;
 		double tmp;
 		#pragma omp for schedule(static,chunk) 
-		for (i=0;i<o.shape[0];i++) {
-			for (j=0;j<o.shape[1];j++) {
+		for (i=0;i<out.shape[0];i++) {
+			for (j=0;j<out.shape[1];j++) {
 				out.data[i][j] = a.data[i][j] + b.data[j][i];
 			}
 		}
@@ -375,14 +375,14 @@ void _AddabT(Matrix &a, Matrix &b, Matrix &out) {
 void _AddaTbT(Matrix &a, Matrix &b, Matrix &out) {
     omp_set_num_threads(8);
 	int maxthreads = omp_get_max_threads();
-	int chunk = ceil(((double) o.shape[0])/(maxthreads*10));
+	int chunk = ceil(((double) out.shape[0])/(maxthreads*10));
 	#pragma omp parallel 
 	{
 		int i,j;
 		double tmp;
 		#pragma omp for schedule(static,chunk) 
-		for (i=0;i<o.shape[0];i++) {
-			for (j=0;j<o.shape[1];j++) {
+		for (i=0;i<out.shape[0];i++) {
+			for (j=0;j<out.shape[1];j++) {
 				out.data[i][j] = a.data[j][i] + b.data[j][i];
 			}
 		}
@@ -405,3 +405,54 @@ void MatrixAdd(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out) {
 	}
 }
 
+
+void ApplyFunctionToMatrix(Matrix &a, ActFunc AF, Matrix &o) {
+	int maxthreads = omp_get_max_threads();
+	int chunk = ceil(((double) out.shape[0])/(maxthreads*10));
+	int i,j;
+	#pragma omp parallel private(i,j)
+	{
+
+		#pragma omp for schedule(static,chunk) 
+		for (i=0;i<out.shape[0];i++) {
+			for (j=0;j<out.shape[1];j++) {
+				out.data[i][j] =AF(a.data[j][i]);
+			}
+		}
+	}	
+}
+
+void ApplyFunctionToMatrix(Matrix &a, ActFunc AF) {
+	int maxthreads = omp_get_max_threads();
+	int chunk = ceil(((double) a.shape[0])/(maxthreads*10));
+	int i,j;
+	#pragma omp parallel private(i,j)
+	{
+
+		#pragma omp for schedule(static,chunk) 
+		for (i=0;i<a.shape[0];i++) {
+			for (j=0;j<a.shape[1];j++) {
+				a.data[i][j] =AF(a.data[j][i]);
+			}
+		}
+	}	
+}
+
+void AddBiasVectorToMatrix(Matrix &a, Matrix &b) {
+	/*******************************************************************
+	 * Adds a bias vector of shape (1,n) to a matrix of shape (m,n).
+	 * ****************************************************************/
+	
+	int maxthreads = omp_get_max_threads();
+	int chunk = ceil(((double) a.shape[0])/(maxthreads*10));
+	int i,j;
+	#pragma omp parallel private(i,j)
+	{
+		#pragma omp for schedule(static,chunk) 
+		for (i=0;i<a.shape[0];i++) {
+			for (j=0;j<a.shape[1];j++) {
+				a.data[i][j] = a.data[i][j] + b.data[0][j];
+			}
+		}
+	}		
+}

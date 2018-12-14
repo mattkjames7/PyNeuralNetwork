@@ -20,37 +20,107 @@ class Network {
 		Network(const char*);
 		Network(const Network &obj);
 		~Network();
-		void InputTrainingData(int*,float*,int,int*);
-		void InputTrainingDataQuiet(int*,float*,int,int*);
-		void InputCrossValidationData(int*,float*,int,int*);
-		void InputCrossValidationDataQuiet(int*,float*,int,int*);
+		
+		/*Changing network*/
+		void ResetWeights();
+		void ResetNetwork();
+		void ChangeNetworkArchitecture();
+		void InsertHiddenLayer();
+		void UseBestWeights();	
+		
+		/*Input data*/
+		void InputTrainingData(int*,double*,int,int*,bool);
+		void InputCrossValidationData(int*,double*,int,int*,bool);
+		void InputTestData(int*,double*,int,int*,bool);
+		
+		/*Training network*/
 		void Train();
-		float GetTrainingAccuracy();
-		float GetCrossValidationAccuracy();
+		
+		/*Classification*/
 		void ClassifyData(int*,float*,int,int*);
 		void ClassifyData(int*,float*,int,int*,float*);
-		void TrainGradientDescent(int,float);
-		void TrainGradientDescentQuiet(int,float);
-		void TrainConjugateGradient();
-		void ExtendArrays();
+
+		/*Save network to file*/
 		void Save(const char*);
-		
+
+		/*Return parameters*/
 		int GetnSteps();
+		void GetTrainingProgress(float*,float*,float*,float*,float*,float*,float*);
 		void GetTrainingAccuracy(float*,float*);
 		void GetCrossValidationAccuracy(float*,float*);
-		void GetLastCrossValidationAccuracy(float*,float*);
+		void GetTestAccuracy(float*,float*);
 		int GetL();
 		void Gets(int*);
 	private:
-		Matrix *Xt, *Xcv;
-		int *yt = NULL, *ycv = NULL;
-		int mt, mcv;
-		int L, *s;
-		bool TData, CVData, Trained;
-		float lambda, range;
-		float *Jt, *Jcv, *Acct, *Acccv;
-		int nSteps, nJ;
-		int nT, na, nz, *Tdims, *adims, *zdims, *ddims;
-		MatrixArray *Theta, *at, *zt, *acv, *zcv, *atest, *ztest, *dTheta, *delta;
+		/*Network architecture*/
+        int L; //number of layers
+        int *s; //number of units in each layer
+        
+        /*Regularization parameters*/
+        double L1, L2;
+        
+        /*Weight matrices*/
+        MatrixArray *ThetaW, *ThetaWGrad;
+        
+        /*Bias matrices*/
+        MatrixArray *ThetaB, *ThetaBGrad;
+        
+        /*Activation function lists*/
+        int *AFCodes; //integer code corresponding to the type of neuron
+        ActFunc *AF; //Actual activation functions will be stored here
+        ActFunc *AFgrad; //These will be used to calculate the gradient during back propagation (and therefore need ot be inverse)
+
+        /*Cost function stuff*/
+        int CFcode; //integer corresponding to the type of cost function to use
+        CostFunc *CF; //The actual cost function pointer
+        CostFuncDelta *CFDelta; //Pointer to the object which calculates the deltas
+
+        /*Training data*/
+        Matrix *Xt; //Training data matrix, shape (mt,s[0])
+        int *yt0 = NULL; //integer class labels, shape (mt,)
+        Matrix *yt; //one-hot matrix, shape (mt,s[-1])
+        bool TData; //True if data exists
+        int mt; //number of samples
+        MatrixArray *at, *zt; //Training set propagation arrays
+
+        /*Cross-validation data*/
+        Matrix *Xc; 
+        int *yc0 = NULL; 
+        Matrix *yc; 
+        bool CData; 
+        int mc;
+        MatrixArray *ac, *zc;
+
+        /*Test data*/
+        Matrix *Xtest;
+        int *ytest0 = NULL; 
+        Matrix *ytest;
+        bool TestData; 
+        int mtest; 
+        MatrixArray *atest, *ztest; 
+        
+        /*Storing Best Weights (based on CV accuracy)*/
+        MatrixArray *BestThetaW, *BestThetaB; //stored best weights
+        bool Best; // whether or not the best weights are being stored
+        float BestAccuracy; //best CV accuracy saved during training
+
+		/*Training progress arrays*/
+		float *Jt, *JtClass, Jc, Jtest; //Cost function
+		float *At, *Ac, *Atest; //Percentage classification accuracy  
+		int nSteps;
+
+		/*Private functions to write*/
+		void _GetOneHotClassLabels(int*,Matrix&);
+		void _CreatePropagationMatrices(MatrixArray&,MatrixArray&);
+		void _CalculateStepGD();
+		void _CalculateStepNesterov();
+		void _CalculateStepRMSProp();
+		void _CalculateStepRProp();
+		void _CheckCostGradient();
+		void _PopulateActivationFunctions();
+		void _SetCostFunction();
+		void _TrainNetwork();
+		void _LoadNetwork();
+		void _AppendToArray(float*);
 };
 #endif

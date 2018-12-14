@@ -44,7 +44,7 @@ float CrossEntropyCost(Matrix &h, Matrix &y, MatrixArray &Theta, float L1, float
 	return J;
 }
 
-void CrossEntropyDelta(Matrix &h, Matrix &y, float *InvAFGrad, Matrix &Deltas) {
+void CrossEntropyDelta(Matrix &h, Matrix &y, ActFunc InvAFGrad, Matrix &Deltas) {
 	/*******************************************************************
 	 * Calculate delta for this cost function (easy because it is just
 	 * the target subtracted from the result).
@@ -98,18 +98,13 @@ float MeanSquaredCost(Matrix &h, Matrix &y, MatrixArray &Theta, float L1, float 
 	return J;
 }
 
-void MeanSquaredDelta(Matrix &h, Matrix &y, float *InvAFGrad, Matrix &Deltas) {
+void MeanSquaredDelta(Matrix &h, Matrix &y, ActFunc InvAFGrad, Matrix &Deltas) {
 	/*******************************************************************
 	 * Calculate delta for this cost function.
 	 ******************************************************************/
 	MatrixSubtract(h,y,false,false,Deltas);
 	/*This Delta calculation requires finding the gradient of the 
 	 * inverse of the activation function*/
-	int i,j;
-	for (i=0;i<h.shape[0];i++) {
-		for (j=0;j<h.shape[1];j++) {
-			Deltas.data[i,j] = Deltas.data[i,j]*InvAFGrad(h.data[i,j]);
-		}
-	}
+	ApplyFunctionToMatrix(Deltas,InvAFGrad);
 }
 

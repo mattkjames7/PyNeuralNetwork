@@ -66,7 +66,7 @@ set_RMSProp = {		'nEpoch':100,
 
 
 
-class NeuralNetwork (object):
+class NeuralNetwork(object):
 	def __init__(self,Layers,L1=0.0,L2=0.0,Ind=0,FT=False,ActFuncs='sigmoid',CostFunction='cross-entropy'):
 		if isinstance(Layers,str):
 			#load network

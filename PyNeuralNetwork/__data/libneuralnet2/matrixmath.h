@@ -11,4 +11,7 @@ void MatrixMultiply(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out);
 void MatrixDot(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out);
 void MatrixAdd(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out);
 void MatrixSubtract(Matrix &a, Matrix &b, bool aT, bool bT, Matrix &out);
+void ApplyFunctionToMatrix(Matrix &a, ActFunc AF, Matrix &o);
+void ApplyFunctionToMatrix(Matrix &a, ActFunc AF);
+void AddBiasVectorToMatrix(Matrix &a, Matrix &b);
 #endif
