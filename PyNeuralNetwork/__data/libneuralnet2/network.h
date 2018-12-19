@@ -11,6 +11,7 @@
 #include "predict.h"
 #include "thetagradient.h"
 #include "updatetheta.h"
+#include "arraytools.h"
 using namespace std;
 
 
@@ -55,6 +56,7 @@ class Network {
 		/*Network architecture*/
         int L; //number of layers
         int *s; //number of units in each layer
+        bool Trained;
         
         /*Regularization parameters*/
         double L1, L2;
@@ -122,5 +124,6 @@ class Network {
 		void _TrainNetwork();
 		void _LoadNetwork();
 		void _AppendToArray(float*);
-};
+		void _InitWeights();
+};		
 #endif

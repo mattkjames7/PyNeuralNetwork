@@ -1,48 +1,76 @@
 #include "network.h"
 //This constructor will be used to initialize the network
-Network::Network(int nLayers, int *Layers, float Lambda, float ThetaRange) {
+Network::Network(int nLayers, int *Layers, float L1, float L2, bool FT, int *ActFunctions, int CostFunction) {
+	/*******************************************************************
+	 * This should work in pretty much the same way as the Python object
+	 * (PyNet) but hopefully a bit quicker!
+	 * 
+	 * Inputs:
+	 * 		nLayers - Number of layers in the network.
+	 * 		*Layers - Integer array of size nLayers denoting how many
+	 * 			nodes are in each layer.
+	 * 		L1 - L1 regularization parameter.
+	 * 		L2 - L2 Regularization parameter.
+	 * 		FT - Boolean, if true enables forward thinking (learning one
+	 * 			hidden layer at a time during training).
+	 * 		*ActFunctions - Array of integers which correspond to
+	 * 			the activation functions in each layer except the input 
+	 * 			layer. Values are:
+	 * 				0 - Linear
+	 * 				1 - Sigmoid
+	 * 				2 - Tanh
+	 * 				3 - ReLU
+	 * 				4 - Leaky ReLU
+	 * 				5 - Softplus (Smooth ReLU)
+	 * 		CostFunction - Integer which tells object which cost 
+	 * 			function we should use. Available options are:
+	 * 				1 - Cross-entropy
+	 * 				2 - Mean squared.
+	 * 
+	 * 
+	 * ****************************************************************/
 	int i;
-	//So here we need to get the initial dimensions of the matrices 
-	L = nLayers;
-	s = new int[L];
-	nT = L - 1;
-	na = L;
-	nz = L -1;
-	Tdims = new int[2*nT];
-	adims = new int[2*na];
-	zdims = new int[2*nz];
-	ddims = new int[2*na];
-	//assign dimensions to theta
+	/*Set the network architecture up*/
+	Network::Trained = false;
+	Network::L = nLayers;
+	Network::s = new int[L];
 	for (i=0;i<L;i++) {
-		s[i] = Layers[i];
-		//printf("%d \n",s[i]);
+		Network::s[i] = Network::Layers[i];
 	}
-	for (i=0;i<L-1;i++) {
-		Tdims[i*2] = s[i + 1];
-		Tdims[i*2+1] = s[i] + 1;
-		//printf("%d %d\n",s[i+1],s[i]+1);
-	}
-	lambda = Lambda;
-	range = ThetaRange;
-	//create and randomly initialize Theta
-	Theta = new MatrixArray(nT,Tdims);	
-	dTheta = new MatrixArray(nT,Tdims);
-	Theta->RandomInit(range);
+	Network::FT = FT;
+
+	/*set up activation functions*/
+	Network::_PopulateActivationFunctions(ActFunctions);
+	
+	/*set cost function*/
+	Network::_SetCostFunction(CostFunction);
+	
+	/*Store regularization parameters*/
+	Network::L1 = L1;
+	Network::L2 = L2;
+	
+	/*Initialize weight and bias matrices*/
+	Network::_InitWeights();
 	
 	
-	//create empty cost and accuracy arrays
-	nJ = 10000;
-	Jt = (float*) malloc(nJ*sizeof(float));
-	Jcv = (float*) malloc(nJ*sizeof(float));
-	Acct = (float*) malloc(nJ*sizeof(float));
-	Acccv = (float*) malloc(nJ*sizeof(float));
-	
-	nSteps = 0;
-	TData = false;
-	CVData = false;
-	Trained = false;
-	mt = 0;
-	mcv = 0;
+	/*set cost function and accuracy arrays to NULL*/
+	Network::Jt = NULL;
+	Network::JtClass = NULL;
+	Network::Jc = NULL;
+	Network::Jtest = NULL;
+	Network::At = NULL;
+	Network::Ac = NULL;
+	Network::Atest = NULL;
+
+	/*initialize some other parameters*/
+	Network::nSteps = 0;
+	Network::TData = false;
+	Network::CData = false;
+	Network::TestData = false;
+	Network::Trained = false;
+	Network::mt = 0;
+	Network::mc = 0;
+	Network::mtest = 0;
 }
 
 Network::Network(const char *fname) {
@@ -152,6 +180,57 @@ Network::Network(const char *fname) {
 	fclose(f);
 }
 
+void Network::_PopulateActivationFunctions(int *ActFunctions){
+	/*******************************************************************
+	 * This procuedure will create a pointer array to the activation
+	 * functions used in each layer.
+	 * ****************************************************************/
+	 Network::AF = new ActFunc[Network::L-1];
+	 Network::AFgrad = new ActFunc[Network::L-1];
+	 int i;
+	 for (i=0;i<Network::L-1;i++) {
+		Network::AFCodes[i] = ActivationFunctions[i];
+		if (ActivationFunctions[i] == 0) {
+			/*linear function*/
+			Network::AF[i] = AF_Linear;
+			Network::AFgrad[i] = AF_LinearGradient;
+		} else if (ActivationFunctions[i] == 1) {
+			/*Sigmoid*/
+			Network::AF[i] = AF_Sigmoid;
+			Network::AFgrad[i] = AF_InverseSigmoidGradient;
+		} else if (ActivationFunctions[i] == 2) {
+			/*Tanh*/
+			Network::AF[i] = AF_Tanh;
+			Network::AFgrad[i] = AF_InverseTanhGradient;
+		} else if (ActivationFunctions[i] == 3) {
+			/*ReLU*/
+			Network::AF[i] = AF_ReLU;
+			Network::AFgrad[i] = AF_ReLUGradient;
+		} else if (ActivationFunctions[i] == 4) {
+			/*Leaky ReLU*/
+			Network::AF[i] = AF_LeakyReLU;
+			Network::AFgrad[i] = AF_InverseLeakyReLUGradient;
+		} else if (ActivationFunctions[i] == 5) {
+			/*Softplus*/
+			Network::AF[i] = AF_Softplus;
+			Network::AFgrad[i] = AF_InverseSoftplusGradient;
+		}
+	}
+}
+
+void Network::_SetCostFunction(int CostFunction) {
+	Network::CFcode = CostFunction;
+	if (CostFunction == 1) {
+		/*cross-entropy*/
+		Network::CF = CrossEntropyCost;
+		Network::CFDelta = CrossEntropyDelta;
+	} else if (CostFunction == 2) {
+		/*mean-squared*/
+		Network::CF = MeanSquaredCost;
+		Network::CFDelta = MeanSquaredDelta;
+	}
+}
+
 //copy constructor
 Network::Network(const Network &obj) {
 	printf("calling copy constructor \n");
@@ -185,14 +264,41 @@ Network::~Network() {
 	}
 }
 
+void Network::_GetOneHotClassLabels(int m, int *y0, Matrix &y) {
+	/*******************************************************************
+	 * This will convert an integer array into one-hot class labels.
+	 * 
+	 * ****************************************************************/
+	int i, ind;
+	for (i=0;i<m;i++) {
+		ind = max(0,min(m-1,y0[i]));
+		y->data[i][ind] = 1;
+	}
+}
+	
+void Network::_CreatePropagationMatrices(int m, Matrix &X, MatrixArray &z, MatrixArray &a, MatrixArray &delta) {
+	/*******************************************************************
+	 * This function should initialize some arrays for the propagation 
+	 * of data through the network.
+	 * ****************************************************************/
+	int dims[Network::L*2];
+	int i;
+	
+	for (i=0;i<Network::L;i++) {
+		dims[i*2] = m;
+		dims[i*2+1] = Network::s[i];
+	}
+	
+	a = new MatrixArray(Network::L,dims);
+	z = new MatrixArray(Network::L-1,&dims[2]);
+	delta = new MatrixArray(Network::L,dims);
+	a->matrix[0]->FillMatrix(X->data);	
+}
+
 //Self explanatory - input training data to network
-void Network::InputTrainingData(int *xshape, float *xin, int ylen, int *yin){
+void Network::InputTrainingData(int *xshape, double **xin, int ylen, int *yin){
 	int i, j;
-	//printf("S = [");
-	//for (i=0;i<L;i++) {
-	//	printf(" %d,",s[i]);
-	//}
-	//printf("]\n");
+
 	if (xshape[1] != s[0]) {
 		printf("X needs to have the dimensions (m,s1), where m is the number of training samples and s1 is equal to the number of units in the input layer of the network\n");
 		return;
@@ -201,138 +307,26 @@ void Network::InputTrainingData(int *xshape, float *xin, int ylen, int *yin){
 		printf("y must have the dimensions (m,), where m is the number of training samples, and the value stored in yin should represent the output unit index or (m,k) where k is the number of outputs\n");
 		return;
 	}	
-	//printf("T1\n");
-	mt = ylen;
-	int Xshape[] = {mt,s[0]+1};
-	Xt = new Matrix(Xshape);
-	Xt->FillWithBias(xin);
-	yt = new int[mt];
-	
 
-	//printf("T2\n");
-	for (i=0;i<mt;i++) {
-		yt[i] = yin[i];
+	/*enter data into relevant variables*/
+	Network::mt = ylen;
+	Network::Xt = new Matrix(Xshape,xin);
+	Network::yt0 = CreateArray(Network::yt0,Network::mt);
+	Network::yt = new Matrix(Network::mt,Network::s[Network::L-1]);
+	Network::_GetOneHotClassLabels(Network::mt,Network::yt0,Network::yt);
+	for (i=0;i<Network::mt;i++) {
+		Network::yt0[i] = yin[i];
 	}
-/*	for (i=0;i<10;i++) {
-		for (j=0;j<s[0]+1;j++) {
-			printf("%f ",Xt->Get(i,j));
-		}
-		printf(": %d\n",yt[i]);
-	}*/
-	TData = true;
-	//printf("T3\n");
-	//create at and zt
-	for (i=0;i<L;i++) {
-		//printf("T3.1\n");
-		ddims[i*2] = mt;
-		//printf("T3.15\n");
-		ddims[i*2 + 1] = s[i];
-		//printf("T3.2\n");
-		if (i > 0) { 
-			//printf("T3.2.1\n");
-			zdims[i*2 - 2] = mt;
-			zdims[i*2 - 1] = s[i];	
-		}
-		//printf("T3.3\n");
-		if (i== L-1) {
-			//printf("T3.3.1\n");
-			adims[i*2] = mt;
-			adims[i*2 + 1] = s[i];
+	Network::TData = true;
 
-		} else {
-			//printf("T3.3.2\n");
-			adims[i*2] = mt;
-			adims[i*2 + 1] = s[i] + 1;
-		}
-	}
-/*	printf("T4 %d\n",L);
-	printf("adims: ");
-	for (i=0;i<L*2;i++) {
-		printf(" %d",adims[i]);
-	}
-	printf("\n");
-	printf("zdims: ");
-	for (i=0;i<(L-1)*2;i++) {
-		printf(" %d",zdims[i]);
-	}
-	printf("\n");
-	printf("ddims: ");
-	for (i=0;i<L*2;i++) {
-		printf(" %d",ddims[i]);
-	}
-	printf("\n");*/
-	at = new MatrixArray(L,adims);
-	//printf("T4.1 %d\n",L);
-	zt = new MatrixArray(L-1,zdims);
-	//printf("T4.2 %d\n",L);
-	delta = new MatrixArray(L,ddims);
-	//printf("T5\n");
-	at->matrix[0]->FillMatrix(Xt->data);
-	//printf("T6\n");
-	
-	Jt[nSteps] = CostFunction(*Theta,*at,*zt,yt,L,s,lambda);
-	//printf("T7\n");
-	Acct[nSteps] = GetTrainingAccuracy();
-	//printf("T8\n");
-	printf("Initial Cost: %f, Accuracy: %f %% \n",Jt[0], Acct[0]);
-	ThetaGradient(*Theta,*at,*delta,yt,L,s,lambda,*dTheta);
-	//printf("T9\n");
+	/*populate propagation arrays*/
+	Network::_CreatePropagationMatrices(Network::mt,Network::Xt,Network::zt,Network::at,Network::deltat);
 }
 
-void Network::InputTrainingDataQuiet(int *xshape, float *xin, int ylen, int *yin){
-	if (xshape[1] != s[0]) {
-		printf("X needs to have the dimensions (m,s1), where m is the number of training samples and s1 is equal to the number of units in the input layer of the network\n");
-		return;
-	}
-	if (ylen != xshape[0]) {
-		printf("y must have the dimensions (m,), where m is the number of training samples, and the value stored in yin should represent the output unit index or (m,k) where k is the number of outputs\n");
-		return;
-	}	
-	mt = ylen;
-	int Xshape[] = {mt,s[0]+1};
-	Xt = new Matrix(Xshape);
-	Xt->FillWithBias(xin);
-	yt = new int[mt];
-	int i;
-	for (i=0;i<mt;i++) {
-		yt[i] = yin[i];
-	}
-	TData = true;
-	
-	//create at and zt
-	for (i=0;i<L;i++) {
-		ddims[i*2] = mt;
-		ddims[i*2 + 1] = s[i];
-		if (i > 0) { 
-			zdims[i*2 - 2] = mt;
-			zdims[i*2 - 1] = s[i];	
-		}
-		if (i== L-1) {
-			adims[i*2] = mt;
-			adims[i*2 + 1] = s[i];
 
-		} else {
-			adims[i*2] = mt;
-			adims[i*2 + 1] = s[i] + 1;
-		}
-	}
-	
-	at = new MatrixArray(L,adims);
-	zt = new MatrixArray(L-1,zdims);
-	delta = new MatrixArray(L,ddims);
-	
-	at->matrix[0]->FillMatrix(Xt->data);
-	
-	
-	Jt[nSteps] = CostFunction(*Theta,*at,*zt,yt,L,s,lambda);
-	Acct[nSteps] = GetTrainingAccuracy();
+void Network::InputCrossValidationData(int *xshape, float **xin, int ylen, int *yin) {
+	int i, j;
 
-	ThetaGradient(*Theta,*at,*delta,yt,L,s,lambda,*dTheta);
-
-}
-
-//optionally input cross validation data
-void Network::InputCrossValidationData(int *xshape, float *xin, int ylen, int *yin) {
 	if (xshape[1] != s[0]) {
 		printf("X needs to have the dimensions (m,s1), where m is the number of CV samples and s1 is equal to the number of units in the input layer of the network\n");
 		return;
@@ -341,85 +335,47 @@ void Network::InputCrossValidationData(int *xshape, float *xin, int ylen, int *y
 		printf("y must have the dimensions (m,), where m is the number of CV samples, and the value stored in yin should represent the output unit index or (m,k) where k is the number of outputs\n");
 		return;
 	}	
-	mcv = ylen;
-	int Xshape[] = {mcv,s[0]+1};
-	Xcv = new Matrix(Xshape);
-	Xcv->FillWithBias(xin);
-	ycv = new int[mcv];
-	int i;
-	for (i=0;i<mcv;i++) {
-		ycv[i] = yin[i];
-	}
-	CVData = true;
-	int adimscv[L*2], zdimscv[(L-1)*2];
-	//create acv and zcv
-	for (i=0;i<L;i++) {
-		if (i > 0) { 
-			zdimscv[i*2 - 2] = mcv;
-			zdimscv[i*2 - 1] = s[i];	
-		}
-		if (i== L-1) {
-			adimscv[i*2] = mcv;
-			adimscv[i*2 + 1] = s[i];
 
-		} else {
-			adimscv[i*2] = mcv;
-			adimscv[i*2 + 1] = s[i] + 1;
-		}
+	/*enter data into relevant variables*/
+	Network::mc = ylen;
+	Network::Xc = new Matrix(Xshape,xin);
+	Network::yc0 = CreateArray(Network::yc0,Network::mc);
+	Network::yc = new Matrix(Network::mc,Network::s[Network::L-1]);
+	Network::_GetOneHotClassLabels(Network::mc,Network::yc0,Network::yc);
+	for (i=0;i<Network::mc;i++) {
+		Network::yc0[i] = yin[i];
 	}
-	acv = new MatrixArray(L,adimscv);
-	zcv = new MatrixArray(L-1,zdimscv);
-	acv->matrix[0]->FillMatrix(Xcv->data);
-	Jcv[nSteps] = CostFunction(*Theta,*acv,*zcv,ycv,L,s,lambda);
-	Acccv[nSteps] = GetCrossValidationAccuracy();
-	printf("Initial Cross Validation Cost: %f, Accuracy: %f %% \n",Jcv[0], Acccv[0]);
+	Network::CData = true;
+
+	/*populate propagation arrays*/
+	Network::_CreatePropagationMatrices(Network::mc,Network::Xc,Network::zc,Network::ac,Network::deltac);
 }
 
+void Network::InputTestData(int *xshape, double **xin, int ylen, int *yin){
+	int i, j;
 
-void Network::InputCrossValidationDataQuiet(int *xshape, float *xin, int ylen, int *yin) {
 	if (xshape[1] != s[0]) {
-		printf("X needs to have the dimensions (m,s1), where m is the number of CV samples and s1 is equal to the number of units in the input layer of the network\n");
+		printf("X needs to have the dimensions (m,s1), where m is the number of test samples and s1 is equal to the number of units in the input layer of the network\n");
 		return;
 	}
 	if (ylen != xshape[0]) {
-		printf("y must have the dimensions (m,), where m is the number of CV samples, and the value stored in yin should represent the output unit index or (m,k) where k is the number of outputs\n");
+		printf("y must have the dimensions (m,), where m is the number of test samples, and the value stored in yin should represent the output unit index or (m,k) where k is the number of outputs\n");
 		return;
 	}	
-	mcv = ylen;
-	int Xshape[] = {mcv,s[0]+1};
-	Xcv = new Matrix(Xshape);
-	Xcv->FillWithBias(xin);
-	ycv = new int[mcv];
-	int i;
-	for (i=0;i<mcv;i++) {
-		ycv[i] = yin[i];
-	}
-	CVData = true;
-	int adimscv[L*2], zdimscv[(L-1)*2];
-	//create acv and zcv
-	for (i=0;i<L;i++) {
-		if (i > 0) { 
-			zdimscv[i*2 - 2] = mcv;
-			zdimscv[i*2 - 1] = s[i];	
-		}
-		if (i== L-1) {
-			adimscv[i*2] = mcv;
-			adimscv[i*2 + 1] = s[i];
 
-		} else {
-			adimscv[i*2] = mcv;
-			adimscv[i*2 + 1] = s[i] + 1;
-		}
+	/*enter data into relevant variables*/
+	Network::mtest = ylen;
+	Network::Xtest = new Matrix(Xshape,xin);
+	Network::ytest0 = CreateArray(Network::ytest0,Network::mtest);
+	Network::ytest = new Matrix(Network::mtest,Network::s[Network::L-1]);
+	Network::_GetOneHotClassLabels(Network::mtest,Network::ytest0,Network::ytest);
+	for (i=0;i<Network::mtest;i++) {
+		Network::ytest0[i] = yin[i];
 	}
-	
-	acv = new MatrixArray(L,adimscv);
-	zcv = new MatrixArray(L-1,zdimscv);
-	
-	acv->matrix[0]->FillMatrix(Xcv->data);
-	
-	Jcv[nSteps] = CostFunction(*Theta,*acv,*zcv,ycv,L,s,lambda);
-	Acccv[nSteps] = GetCrossValidationAccuracy();
-	
+	Network::TestData = true;
+
+	/*populate propagation arrays*/
+	Network::_CreatePropagationMatrices(Network::mtest,Network::Xtest,Network::ztest,Network::atest,Network::deltatest);
 }
 
 //this will train the network using either gradient-descent or conjugate-gradient minimization
@@ -604,13 +560,6 @@ void Network::ClassifyData(int *xshape, float *xin, int m, int *yout, float *SMo
 	delete Xtest;
 }
 
-void Network::ExtendArrays() {
-	nJ += 10000;
-	Jt = (float*) realloc(Jt,nJ*sizeof(float));
-	Jcv = (float*) realloc(Jcv,nJ*sizeof(float));
-	Acct = (float*) realloc(Acct,nJ*sizeof(float));
-	Acccv = (float*) realloc(Acccv,nJ*sizeof(float));	
-}
 
 void Network::Save(const char *fname) {
 	int i;
