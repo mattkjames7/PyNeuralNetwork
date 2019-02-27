@@ -1,0 +1,61 @@
+Activation Functions:
+d	- Leaky ReLU
+d	- ReLU
+d	- SoftPlus
+	- SoftMax
+d	- Linear
+d	- Sigmoid
+d	- Tanh
+	
+Cost Functions:
+d	- Cross-entropy
+d	- C-E delta
+d	- Mean-squared
+d	- M-S delta
+	
+Regularization:
+d	- L1
+d	- L2
+d	- L1 gradient
+d	- L2 gradient
+
+Propagation:
+d	- Forward propagate
+d	- Back propagate
+	
+		
+NeuralNetwork Object:
+d	- Init
+	- Load
+	- Save
+d	- Init weights
+d	- Reset Weights
+d	- Reset Network
+	- Change Architecture
+	- Add hidden layer
+	- Input Training data
+	- Input CV data
+	- Input Test data
+	- Set cost function
+	- Populate activation functions
+	- Classify
+	- Get Training accuracy
+	- Get CV accuracy
+	- Get Test accuracy
+	- Get Training cost
+	- Get CV cost
+	- Get Test cost
+	- Get One hot Class labels
+	- Get Propagation arrays
+	- Create delta matrices
+	- Calculate step GD
+	- Calculate step Nesterov
+	- Calculate step RProp
+	- Calculate step RMSProp
+	- Train
+	- Check cost gradient
+	- Calculate F1
+	- Return Theta
+	- Use Best weights
+	
+	

@@ -416,7 +416,7 @@ void ApplyFunctionToMatrix(Matrix &a, ActFunc AF, Matrix &o) {
 		#pragma omp for schedule(static,chunk) 
 		for (i=0;i<out.shape[0];i++) {
 			for (j=0;j<out.shape[1];j++) {
-				out.data[i][j] =AF(a.data[j][i]);
+				out.data[i][j] = AF(a.data[j][i]);
 			}
 		}
 	}	
@@ -432,7 +432,7 @@ void ApplyFunctionToMatrix(Matrix &a, ActFunc AF) {
 		#pragma omp for schedule(static,chunk) 
 		for (i=0;i<a.shape[0];i++) {
 			for (j=0;j<a.shape[1];j++) {
-				a.data[i][j] =AF(a.data[j][i]);
+				a.data[i][j] = AF(a.data[j][i]);
 			}
 		}
 	}	

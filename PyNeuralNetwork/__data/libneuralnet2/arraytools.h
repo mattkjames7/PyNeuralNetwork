@@ -38,7 +38,7 @@ template <class T> T* AppendToArray(T *a, int na, T *b, int nb, int *n) {
 	int *tmp = new T[n[0]]; //temporary array
 	if (na > 0) {
 		memcpy(tmp,a,na*sizeof(T)); //copy contents of a to tmp
-		delete[] a; // delete original array
+		delete[] a; // delete original a
 	}
 	memcpy(&tmp[na],b,nb*sizeof(T)); //copy contents of b to tmp
 	a = tmp; //transfer pointer to new array

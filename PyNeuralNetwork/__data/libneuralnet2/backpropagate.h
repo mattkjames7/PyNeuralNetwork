@@ -1,5 +1,5 @@
-#ifndef __PROPAGATE_H__
-#define __PROPAGATE_H__
+#ifndef __BACKPROPAGATE_H__
+#define __BACKPROPAGATE_H__
 #include <stdio.h>
 #include <math.h>
 #include "matrix.h"
@@ -9,6 +9,5 @@
 #include "activationfunctions.h"
 using namespace std;
 
-void Propagate(MatrixArray &a, MatrixArray &z, MatrixArray &ThetaW, MatrixArray &ThetaB, ActFunc *AF);
 #endif
 

@@ -180,6 +180,111 @@ Network::Network(const char *fname) {
 	fclose(f);
 }
 
+void Network::_InitWeights() {
+	/*initialize the weight and bias matrices*/
+	int i, Wshapes[(Network::L-1)*2], Bshapes[(Network::L-1)*2];
+	for (i=0;i<Network::L-1;i++) {
+		Wshapes[i*2] = Network::s[i];
+		Bshapes[i*2] = Network::1;
+		Wshapes[i*2+1] = Network::s[i+1];
+		Bshapes[i*2+1] = Network::s[i+1];
+	}
+	Network::ThetaW = new MatrixArray(Network::L-1,Wshapes);
+	Network::ThetaWGrad = new MatrixArray(Network::L-1,Wshapes);
+	Network::ThetaB = new MatrixArray(Network::L-1,Bshapes);
+	Network::ThetaBGrad = new MatrixArray(Network::L-1,Bshapes);
+	
+	Network::ResetWeights();
+}
+
+void Network::ResetWeights() {
+	/*initialize the normally-distributed random number generator*/
+	default_random_engine generator;
+	normal_distribution<double> distribution(0.0,1.0);
+	
+	/*go through each matrix, scale by 1/sqrt(s[i])*/
+	int i, j, k, ni, nj, nk;
+	double scale;
+	ni = Network::L-1
+	for (i=0;i<ni;i++) {
+		nj = Network::ThetaW.matrix[i].shape[0]
+		nk = Network::ThetaW.matrix[i].shape[1]
+		scale = sqrt((double) Network::s[i]);
+		for (j=0;j<nj;j++) {
+			for (k=0;k<nk;k++) {
+				Network::ThetaW.matrix[i].data[j][k] = distribution(generator)/scale;
+			}
+		}	
+		for (k=0;k<nk;k++) {
+			Network::ThetaB.matrix[i].data[1][k] = distribution(generator);
+		}		
+	}	
+}
+
+void Network::ResetNetwork() {
+	Network::ResetWeights()
+	
+	if (Network::Trained) {
+		DestroyArray(Network::At);
+		Network::At = NULL;
+		DestroyArray(Network::Ac);
+		Network::Ac = NULL;
+		DestroyArray(Network::Atest);
+		Network::Atest = NULL;
+		
+		DestroyArray(Network::Jt);
+		Network::Jt = NULL;
+		DestroyArray(Network::JtClass);
+		Network::JtClass = NULL;
+		DestroyArray(Network::Jc);
+		Network::Jc = NULL;
+		DestroyArray(Network::Jtest);
+		Network::Jtest = NULL;
+		
+		Network::nSteps = 0;
+		Network::Trained = false;
+	}
+	
+}
+
+Network::ChangeNetworkArchitecture(int newL, int *newS) {
+	/*******************************************************************
+	 * This will change the architecture of the hidden layers of the 
+	 * network, the input and output will remain the same.
+	 * 
+	 * Inputs:
+	 * 		newL - new total number of layers (including in and out)
+	 * 		*newS - array containing the full new architecture. NOTE:
+	 * 			newS[0] and newS[newL-1] are ignored, they could be 
+	 * 			totaly random numbers and it wouldn't make a difference;
+	 * 			the inputs and outputs stay exactly the same.
+	 * 
+	 * ****************************************************************/
+	
+	/*copy old stuff to a temp array first*/
+	int tmpL = Network::L;
+	int *tmpS;
+	tmpS = CreateArray(tmpS,tmpL);
+	CopyArray(Network::s,tmpS,tmpL);
+	DestroyArray(Network::s);	
+	
+	/*redefine new s and L*/
+	Network::L = newL;
+	Network::s = CreateArray(Netowkr::s,newL);
+	CopyArray(newS,Network::s,newL);
+	Network::s[0] = tmpS[0];
+	Network::s[newL-1] = tmpS[tmpL-1];
+	
+	/*reset weights*/
+	Network::ResetWeights();
+	
+	/*change propagation arrays*/
+	
+	/*repopulate activation functions*/
+	
+	
+}
+
 void Network::_PopulateActivationFunctions(int *ActFunctions){
 	/*******************************************************************
 	 * This procuedure will create a pointer array to the activation
@@ -321,6 +426,10 @@ void Network::InputTrainingData(int *xshape, double **xin, int ylen, int *yin){
 
 	/*populate propagation arrays*/
 	Network::_CreatePropagationMatrices(Network::mt,Network::Xt,Network::zt,Network::at,Network::deltat);
+
+	/*Create Delta Matrices*/
+	Network::_InitDeltaMatrices();
+
 }
 
 

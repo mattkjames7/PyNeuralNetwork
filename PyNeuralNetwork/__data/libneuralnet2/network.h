@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <random>
 #include "matrix.h"
 #include "matrixmath.h"
 #include "matrixarray.h"
@@ -67,6 +68,9 @@ class Network {
         /*Bias matrices*/
         MatrixArray *ThetaB, *ThetaBGrad;
         
+        /*Delta matrices - these will hopefully speed up training if they're only created once for each training set*/
+        MatrixArray *Delta;
+        
         /*Activation function lists*/
         int *AFCodes; //integer code corresponding to the type of neuron
         ActFunc *AF; //Actual activation functions will be stored here
@@ -114,6 +118,7 @@ class Network {
 		/*Private functions to write*/
 		void _GetOneHotClassLabels(int*,Matrix&);
 		void _CreatePropagationMatrices(MatrixArray&,MatrixArray&);
+		void _InitDeltaMatrices();
 		void _CalculateStepGD();
 		void _CalculateStepNesterov();
 		void _CalculateStepRMSProp();
