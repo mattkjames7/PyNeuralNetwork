@@ -67,7 +67,32 @@ set_RMSProp = {		'nEpoch':100,
 
 
 class NeuralNetwork(object):
-	def __init__(self,Layers,L1=0.0,L2=0.0,Ind=0,FT=False,ActFuncs='sigmoid',CostFunction='cross-entropy'):
+	def __init__(self,Layers,L1=0.0,L2=0.0,Ind=0,FT=False,ActFuncs='sigmoid',CostFunction='cross-entropy',NetworkType='Classification'):
+		'''
+		Creates a neural network object.
+		
+		Inputs
+		======
+		Layers: List or numpy array containing the number of nodes in 
+			each layer, starting at the input layer.
+		L1:	L1 regularization parameter.
+		L2:	L2 regularization parameter.
+		Ind: Currently does nothing.
+		FT: Boolean, if False training is done with all the layers at 
+			once, when True, the forward-thinking method trains one 
+			hidden layer at a time.
+		ActFuncs: string or list of strings which say what type of 
+			activation functions are to be used in each layer. Choose
+			from: 'linear'|'relu'|'leakyrelu'|'sigmoid'|'tanh'|'softplus'
+			(by default sigmoid neurons are used throughout).
+		CostFunction: 'cross-entropy'|'mean-squared' - cost function to
+			be used.
+		NetworkType: 'Classification'|'Regression' - set to 'Regression'
+			for continuout output nodes.
+			
+	
+		'''
+		
 		if isinstance(Layers,str):
 			#load network
 			self.LoadNetwork(Layers)
@@ -81,6 +106,7 @@ class NeuralNetwork(object):
 			self.ActFuncs = ActFuncs
 			self._PopulateActFuncs()
 			self._SetCostFunction(CostFunction)
+			self._NetType = NetworkType
 
 			#is this a forward-thinking NN?
 			self.FT = FT
@@ -277,6 +303,7 @@ class NeuralNetwork(object):
 		
 
 	def StoreInputData(self,Xin,yin,Split=0.8):
+		#THIS WILL BE DELETED
 		#store data to be split up into training and cross validation sets later
 		self.X = Xin
 		self.y = yin
@@ -284,7 +311,7 @@ class NeuralNetwork(object):
 		self.Split = Split
 		
 	def InputStoredData(self):
-		
+		#THIS WILL BE DELETED
 		#start by counting the number of unique y values
 		if self.y.ndim == 1:
 			ytmp = np.copy(self.y)
@@ -429,7 +456,7 @@ class NeuralNetwork(object):
 		self.Xt[:] = np.array(Xin)
 		self.yt0 = np.array(yin)
 
-		if np.size(tysize) == 1:
+		if np.size(tysize) == 1 and not self.NetType == 'Regression':
 			self.yt = self._GetOneHotClassLabels(self.yt0)
 		else:
 			self.yt = self.yt0
@@ -452,7 +479,7 @@ class NeuralNetwork(object):
 		self.Xtest[:] = np.array(Xin)
 		self.ytest0 = np.array(yin)
 
-		if np.size(tysize) == 1:
+		if np.size(tysize) == 1 and not self.NetType == 'Regression':
 			self.ytest = self._GetOneHotClassLabels(self.ytest0)
 		else:
 			self.ytest = self.ytest0
@@ -476,7 +503,7 @@ class NeuralNetwork(object):
 		self.Xc[:] = np.array(Xin)
 		self.yc0 = np.array(yin)		
 		
-		if np.size(tysize) == 1:
+		if np.size(tysize) == 1 and not self.NetType == 'Regression':
 			self.yc = self._GetOneHotClassLabels(self.yc0)
 		else:
 			self.yc = self.yc0
