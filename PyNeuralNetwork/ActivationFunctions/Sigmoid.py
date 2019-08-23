@@ -1,8 +1,8 @@
 import numpy as np
 
 def Sigmoid(z):
-	return 1.0/(1.0 + np.exp(-z))
-
+	#return 1.0/(1.0 + np.exp(-z))
+	return np.exp(-np.logaddexp(0,-z))
 
 def SigmoidGradient(z):
 	
