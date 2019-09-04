@@ -456,7 +456,7 @@ class NeuralNetwork(object):
 		self.Xt[:] = np.array(Xin)
 		self.yt0 = np.array(yin)
 
-		if np.size(tysize) == 1 and not self.NetType == 'Regression':
+		if np.size(tysize) == 1 and not self._NetType == 'Regression':
 			self.yt = self._GetOneHotClassLabels(self.yt0)
 		else:
 			self.yt = self.yt0
@@ -479,7 +479,7 @@ class NeuralNetwork(object):
 		self.Xtest[:] = np.array(Xin)
 		self.ytest0 = np.array(yin)
 
-		if np.size(tysize) == 1 and not self.NetType == 'Regression':
+		if np.size(tysize) == 1 and not self._NetType == 'Regression':
 			self.ytest = self._GetOneHotClassLabels(self.ytest0)
 		else:
 			self.ytest = self.ytest0
@@ -503,7 +503,7 @@ class NeuralNetwork(object):
 		self.Xc[:] = np.array(Xin)
 		self.yc0 = np.array(yin)		
 		
-		if np.size(tysize) == 1 and not self.NetType == 'Regression':
+		if np.size(tysize) == 1 and not self._NetType == 'Regression':
 			self.yc = self._GetOneHotClassLabels(self.yc0)
 		else:
 			self.yc = self.yc0
