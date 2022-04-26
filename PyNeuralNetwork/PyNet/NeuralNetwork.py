@@ -1680,14 +1680,14 @@ class NeuralNetwork(object):
 		else:
 			print('Best weights were not stored during training')		
 		
-	def PlotArchitecture(self,fig=None,maps=[1,1,0,0],ShowTheta=True):
+	def PlotArchitecture(self,fig=None,maps=[1,1,0,0],ShowTheta=True,inLabels=None,outLabels=None):
 
 		if fig is None:
 			fig = plt
 			fig.figure()
 		
 		ax = fig.subplot2grid((maps[1],maps[0]),(maps[3],maps[2]))
-		ax.axis([0,1,0,1])
+		ax.axis([-0.01,1.01,-0.01,1.01])
 		ax.set_aspect(1.0)
 		
 		ax.set_xticks([0.0])
@@ -1735,12 +1735,20 @@ class NeuralNetwork(object):
 		#show inputs
 		for i in range(0,self.s[0]):
 			Circle(ax,x[0],y[0][i],R*0.3,[1.0,1.0,1.0])
-			ax.text(x[0],y[0][i],'$x_{:d}$'.format(i),ha='center',va='center',zorder=3.0)
+			if inLabels is None:
+				lab = '$x_{:d}$'.format(i)
+			else:
+				lab = inLabels[i]
+			ax.text(x[0],y[0][i],lab,ha='right',va='center',zorder=3.0)
 		
 		#show outputs
 		for i in range(0,self.s[-1]):
 			Circle(ax,x[-1],y[-1][i],R*0.3,[1.0,1.0,1.0])
-			ax.text(x[-1],y[-1][i],'$h_{:d}$'.format(i),ha='center',va='center',zorder=3.0)
+			if outLabels is None:
+				lab = '$h_{:d}$'.format(i)
+			else:
+				lab = outLabels[i]
+			ax.text(x[-1],y[-1][i],lab,ha='left',va='center',zorder=3.0)
 			ax.plot([x[-2],x[-1]],[y[-2][i],y[-1][i]],color=[0.0,0.0,0.0],zorder=1.0)
 			
 		#Plot lines connecting nodes
